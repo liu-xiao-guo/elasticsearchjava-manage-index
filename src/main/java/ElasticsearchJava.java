@@ -4,6 +4,8 @@ import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
+import co.elastic.clients.elasticsearch.indices.PutMappingResponse;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -277,7 +279,29 @@ public class ElasticsearchJava {
                 "  }\n" +
                 "}\n";
 
+        if (io.checkIndexExists("test1"))
+            io.deleteIndex("test1");
+
         io.putMapping("test1", mappings);
+
+        try {
+            if (io.checkIndexExists(INDEX_NAME))
+                io.deleteIndex(INDEX_NAME);
+            io.createIndex(INDEX_NAME);
+
+            PutMappingResponse response = client.indices()
+                    .putMapping(p->p.index(INDEX_NAME).properties("nested1", m->m.nested(f->f)));
+            if(!response.acknowledged()) {
+                System.out.println("Something is wrong when creating a field");
+            }
+
+            // Get the response
+            GetMappingResponse resp = client.indices().getMapping(p ->
+                    p.index(INDEX_NAME));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 //        // Index data to an index products
 //        Product product = new Product("abc", "Bag", 42);
