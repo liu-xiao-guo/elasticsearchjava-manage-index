@@ -1,11 +1,13 @@
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.indices.GetMappingResponse;
 import co.elastic.clients.elasticsearch.indices.PutMappingResponse;
+import co.elastic.clients.elasticsearch.indices.get_mapping.IndexMappingRecord;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
@@ -37,6 +39,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Base64;
+import java.util.Map;
 
 public class ElasticsearchJava {
 
@@ -295,9 +298,16 @@ public class ElasticsearchJava {
                 System.out.println("Something is wrong when creating a field");
             }
 
-            // Get the response
+            // print out the mapping
             GetMappingResponse resp = client.indices().getMapping(p ->
                     p.index(INDEX_NAME));
+
+            System.out.println(resp);
+
+            Map<String, IndexMappingRecord> allMappings = resp.result();
+            IndexMappingRecord indexMapping = allMappings.get(INDEX_NAME);
+            TypeMapping mapping = indexMapping.mappings();
+            System.out.println(mapping.properties().get("nested1").isNested());
 
         } catch (Exception e) {
             e.printStackTrace();
